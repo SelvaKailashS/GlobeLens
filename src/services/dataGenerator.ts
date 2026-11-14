@@ -29,8 +29,9 @@ function computeMannKendall(values: number[]): { S: number; varS: number; Z: num
     return { S: 0, varS: 1, Z: 0, pValue: 1, isSignificant: false };
   }
 
-  // Downsample if dataset is too massive for pairwise O(N^2)
-  const sampled = n > 300 ? values.filter((_, idx) => idx % Math.ceil(n / 300) === 0) : values;
+  // Downsample gracefully if dataset is massive
+  const step = n > 350 ? Math.ceil(n / 350) : 1;
+  const sampled = values.filter((_, idx) => idx % step === 0);
   const m = sampled.length;
 
   let S = 0;
@@ -61,10 +62,14 @@ function computeMannKendall(values: number[]): { S: number; varS: number; Z: num
 
 /**
  * Sen's non-parametric slope estimator (median of pairwise slopes)
+ * Includes Hollander-Wolfe rank-based non-parametric confidence interval calculation.
  */
-function computeSenSlope(values: number[]): number {
+function computeSenSlopeWithCi(
+  values: number[],
+  varS: number
+): { senSlope: number; lowerSlope: number; upperSlope: number } {
   const n = values.length;
-  if (n < 2) return 0;
+  if (n < 2) return { senSlope: 0, lowerSlope: 0, upperSlope: 0 };
 
   const step = n > 250 ? Math.ceil(n / 250) : 1;
   const sampled = values.filter((_, idx) => idx % step === 0);
@@ -73,14 +78,28 @@ function computeSenSlope(values: number[]): number {
   const slopes: number[] = [];
   for (let i = 0; i < m - 1; i++) {
     for (let j = i + 1; j < m; j++) {
-      const slope = (sampled[j] - sampled[i]) / (j - i);
+      // Delta time in original index steps
+      const deltaT = (j - i) * step;
+      const slope = (sampled[j] - sampled[i]) / deltaT;
       slopes.push(slope);
     }
   }
 
   slopes.sort((a, b) => a - b);
-  const mid = Math.floor(slopes.length / 2);
-  return slopes.length % 2 !== 0 ? slopes[mid] : (slopes[mid - 1] + slopes[mid]) / 2;
+  const Nprime = slopes.length;
+  const mid = Math.floor(Nprime / 2);
+  const senSlope = Nprime % 2 !== 0 ? slopes[mid] : (slopes[mid - 1] + slopes[mid]) / 2;
+
+  // Hollander-Wolfe rank interval for Sen's Slope
+  const Z_alpha = 1.96; // 95% two-tailed critical value
+  const C_alpha = Math.round(Z_alpha * Math.sqrt(varS));
+  const kLower = Math.max(0, Math.floor((Nprime - C_alpha) / 2));
+  const kUpper = Math.min(Nprime - 1, Math.floor((Nprime + C_alpha) / 2));
+
+  const lowerSlope = slopes[kLower] !== undefined ? slopes[kLower] : senSlope;
+  const upperSlope = slopes[kUpper] !== undefined ? slopes[kUpper] : senSlope;
+
+  return { senSlope, lowerSlope, upperSlope };
 }
 
 /**
@@ -92,7 +111,6 @@ function generateDateSeries(start: string, end: string, resolution: "daily" | "m
   const endDate = new Date(end);
 
   if (isNaN(current.getTime()) || isNaN(endDate.getTime()) || current > endDate) {
-    // Fallback default: 2014 to 2024
     const defStart = new Date("2014-01-01");
     const defEnd = new Date("2024-12-31");
     return generateDateSeries(defStart.toISOString().slice(0, 10), defEnd.toISOString().slice(0, 10), resolution);
@@ -105,7 +123,6 @@ function generateDateSeries(start: string, end: string, resolution: "daily" | "m
     } else {
       current.setMonth(current.getMonth() + 1);
     }
-    // Cap at 1500 points for frontend rendering performance
     if (dates.length >= 1500) break;
   }
 
@@ -122,7 +139,6 @@ export function generateInvestigationData(config: InvestigationConfig): Investig
   const dates = generateDateSeries(config.startDate, config.endDate, config.resolution);
   const n = dates.length;
 
-  // Regional baseline & trend coefficients
   let annualDrift = 0;
   let seasonalAmplitude = 1.0;
   let noiseSigma = 0.3;
@@ -155,7 +171,6 @@ export function generateInvestigationData(config: InvestigationConfig): Investig
       break;
   }
 
-  // Generate deterministic pseudorandom series using sinusoidal cycles + linear drift
   const points: TimeSeriesPoint[] = [];
   const observedValues: number[] = [];
 
@@ -166,20 +181,13 @@ export function generateInvestigationData(config: InvestigationConfig): Investig
     const dayOfYear = (d.getMonth() * 30.5 + d.getDate()) % 365.25;
     const yearFraction = i / pointsPerYear;
 
-    // Seasonal cycle
     const seasonal = seasonalAmplitude * Math.sin((2 * Math.PI * dayOfYear) / 365.25 - 1.2);
-
-    // Multiannual quasi-biennial / ENSO cycle (3.5 - 5 year cycle)
     const enso = (seasonalAmplitude * 0.25) * Math.sin((2 * Math.PI * yearFraction) / 4.2);
-
-    // Linear trend component
     const trendComp = baseValue + annualDrift * yearFraction;
 
-    // Gaussian-like deterministic noise
     const pseudoRandom = Math.sin(i * 12.9898 + 78.233) * 43758.5453;
     const noise = (pseudoRandom - Math.floor(pseudoRandom) - 0.5) * 2 * noiseSigma;
 
-    // Acute episodic anomaly (e.g. 2015-2016 or 2023 climate shocks)
     const year = d.getFullYear();
     let shock = 0;
     if (year === 2016 || year === 2023) {
@@ -191,7 +199,6 @@ export function generateInvestigationData(config: InvestigationConfig): Investig
     const value = Math.round((trendComp + seasonal + enso + noise + shock) * 1000) / 1000;
     observedValues.push(value);
 
-    // Compute rolling / moving trend approximation for display
     const smoothedTrend = Math.round((trendComp + shock * 0.3) * 1000) / 1000;
     const confidenceMargin = Math.round((noiseSigma * 1.645) * 1000) / 1000;
 
@@ -203,15 +210,17 @@ export function generateInvestigationData(config: InvestigationConfig): Investig
       upperConfidence: Math.round((smoothedTrend + confidenceMargin) * 1000) / 1000,
       lowerConfidence: Math.round((smoothedTrend - confidenceMargin) * 1000) / 1000,
       anomaly: Math.round((value - trendComp) * 1000) / 1000,
-      isInterpolated: i % 47 === 0, // Mock 2% cloud obscuration interpolation
+      isInterpolated: i % 47 === 0,
     });
   }
 
   // Statistical calculations
   const mk = computeMannKendall(observedValues);
-  const sen = computeSenSlope(observedValues);
-  const decadalRate = sen * pointsPerYear * 10;
-  const annualSlope = sen * pointsPerYear;
+  const { senSlope, lowerSlope, upperSlope } = computeSenSlopeWithCi(observedValues, mk.varS);
+  const decadalRate = senSlope * pointsPerYear * 10;
+  const decadalLower = lowerSlope * pointsPerYear * 10;
+  const decadalUpper = upperSlope * pointsPerYear * 10;
+  const annualSlope = senSlope * pointsPerYear;
 
   // Direction classification
   let direction: StatisticalSummary["direction"] = "Stable / No Trend";
@@ -231,13 +240,11 @@ export function generateInvestigationData(config: InvestigationConfig): Investig
   const rateFormatted = `${rateSign}${decadalRate.toFixed(3)} ${variable.unit} / decade`;
   const ratePerDecade = `${rateSign}${(annualSlope * 10).toFixed(2)} ${variable.unit}/decade`;
 
-  // 95% Confidence Interval
-  const marginCi = Math.abs(decadalRate * 0.22) + 0.01;
-  const ciLower = (decadalRate - marginCi).toFixed(3);
-  const ciUpper = (decadalRate + marginCi).toFixed(3);
-  const confidenceInterval = `95% CI: [${ciLower}, ${ciUpper}] ${variable.unit}`;
+  // Rigorous Hollander-Wolfe 95% Confidence Interval
+  const ciLowerSign = decadalLower >= 0 ? "+" : "";
+  const ciUpperSign = decadalUpper >= 0 ? "+" : "";
+  const confidenceInterval = `95% CI: [${ciLowerSign}${decadalLower.toFixed(3)}, ${ciUpperSign}${decadalUpper.toFixed(3)}] ${variable.unit}/decade`;
 
-  // Valid vs missing points
   const totalPoints = points.length;
   const interpolatedCount = points.filter((p) => p.isInterpolated).length;
   const validObservations = totalPoints - interpolatedCount;
@@ -257,7 +264,7 @@ export function generateInvestigationData(config: InvestigationConfig): Investig
     pValue: mk.pValue,
     mannKendallZ: Math.round(mk.Z * 100) / 100,
     mannKendallS: mk.S,
-    senSlope: Math.round(sen * 10000) / 10000,
+    senSlope: Math.round(senSlope * 10000) / 10000,
     rSquared: Math.min(0.96, Math.max(0.12, Math.abs(mk.Z) / 6)),
     dataCoveragePercent,
     validObservations,
@@ -266,7 +273,6 @@ export function generateInvestigationData(config: InvestigationConfig): Investig
     isDemoData: true,
   };
 
-  // Scientific Interpretation synthesis
   const interpretation: ScientificInterpretation = buildInterpretation(region, variable, statistics, config);
 
   return {
@@ -289,10 +295,6 @@ function buildInterpretation(
   stats: StatisticalSummary,
   config: InvestigationConfig,
 ): ScientificInterpretation {
-  const isWarming = variable.id === "temperature" && stats.directionType === "increasing";
-  const isDrying = variable.id === "precipitation" && stats.directionType === "decreasing";
-  const isGreening = variable.id === "vegetation" && stats.directionType === "increasing";
-
   let whatChanged = "";
   let whereChanged = "";
   let howFastChanged = "";
@@ -314,8 +316,17 @@ function buildInterpretation(
     physicalMechanisms.push("Boundary layer thermal inversions", "Fossil fuel combustion rate changes", "Photochemical oxidation sink dynamics");
   }
 
-  // 2. Where did it change?
-  whereChanged = `The anomaly is concentrated within the geographic bounding bounds of ${region.name} (${region.coordinates.lat.toFixed(2)}°N, ${region.coordinates.lng.toFixed(2)}°E), encompassing an approximate terrestrial area of ${region.areaKm2.toLocaleString()} km² across the ${region.boundaryGeoJson.features[0].properties?.biome || "study"} biome.`;
+  // 2. Where did it change? (Formatted with standard N/S, E/W coordinates and en-US locale)
+  const latStr =
+    region.coordinates.lat >= 0
+      ? `${region.coordinates.lat.toFixed(2)}°N`
+      : `${Math.abs(region.coordinates.lat).toFixed(2)}°S`;
+  const lngStr =
+    region.coordinates.lng >= 0
+      ? `${region.coordinates.lng.toFixed(2)}°E`
+      : `${Math.abs(region.coordinates.lng).toFixed(2)}°W`;
+
+  whereChanged = `The anomaly is concentrated within the geographic bounding bounds of ${region.name} (${latStr}, ${lngStr}), encompassing an approximate terrestrial area of ${region.areaKm2.toLocaleString("en-US")} km² across the ${region.boundaryGeoJson.features[0].properties?.biome || "study"} biome.`;
 
   // 3. How fast did it change?
   howFastChanged = `Estimated velocity of change is ${stats.rateOfChange} (Sen's non-parametric slope: ${stats.senSlope} ${variable.unit}/interval). Over the selected ${config.startDate.slice(0, 4)}–${config.endDate.slice(0, 4)} investigation timeframe, cumulative change is projected at ${(stats.annualSlope * 10).toFixed(2)} ${variable.unit} per decade.`;

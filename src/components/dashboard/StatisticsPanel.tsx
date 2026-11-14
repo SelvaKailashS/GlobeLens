@@ -168,7 +168,7 @@ export function StatisticsPanel({ statistics, variable }: StatisticsPanelProps) 
           </CardHeader>
           <CardContent className="p-4 pt-1">
             <p className="text-[11px] text-slate-400 leading-snug">
-              {statistics.validObservations.toLocaleString()} of {statistics.totalPoints.toLocaleString()} points valid.
+              {statistics.validObservations.toLocaleString("en-US")} of {statistics.totalPoints.toLocaleString("en-US")} points valid.
             </p>
             <div className="mt-2.5 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px]">
               <span className="text-slate-500">Quality Rating:</span>

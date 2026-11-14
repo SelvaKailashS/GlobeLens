@@ -143,7 +143,7 @@ export function MainMap({
                   <div className="mt-2 pt-2 border-t border-slate-800 text-[10px] space-y-1">
                     <div className="flex justify-between">
                       <span className="text-slate-500">Area:</span>
-                      <span className="text-slate-300 font-mono">{region.areaKm2.toLocaleString()} km²</span>
+                      <span className="text-slate-300 font-mono">{region.areaKm2.toLocaleString("en-US")} km²</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-500">Target Phenomena:</span>

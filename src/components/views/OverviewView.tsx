@@ -20,9 +20,11 @@ import {
   BarChart3,
 } from "lucide-react";
 
+import { EnvironmentalVariableId } from "@/types/terratrend";
+
 interface OverviewViewProps {
   onExploreRegion: (regionId: string) => void;
-  onExploreVariable: (variableId: any) => void;
+  onExploreVariable: (variableId: EnvironmentalVariableId) => void;
   onGoToDashboard: () => void;
 }
 

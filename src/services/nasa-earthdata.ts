@@ -34,9 +34,9 @@ export const NASA_GIBS_TILE_LAYERS: Record<EnvironmentalVariableId, NasaTileSour
   temperature: {
     id: "gibs-modis-lst",
     name: "MODIS Terra Land Surface Temp Day (8-Day Composite)",
-    layerIdentifier: "MODIS_Terra_L3_Land_Surface_Temp_Daily_Day",
+    layerIdentifier: "MODIS_Terra_Land_Surface_Temp_Day",
     format: "image/png",
-    wmtsTemplateUrl: `${NASA_ENDPOINTS.gibsWmtsBase}/MODIS_Terra_L3_Land_Surface_Temp_Daily_Day/default/{Time}/GoogleMapsCompatible_Level8/{z}/{y}/{x}.png`,
+    wmtsTemplateUrl: `${NASA_ENDPOINTS.gibsWmtsBase}/MODIS_Terra_Land_Surface_Temp_Day/default/{Time}/GoogleMapsCompatible_Level7/{z}/{y}/{x}.png`,
     tileMatrixSet: "EPSG3857",
     availableDateRange: {
       start: "2000-02-24",

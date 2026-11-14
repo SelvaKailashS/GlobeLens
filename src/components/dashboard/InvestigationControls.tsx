@@ -58,11 +58,13 @@ export function InvestigationControls({
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
           {/* 1. Environmental Variable Selector */}
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-slate-300 flex items-center gap-1.5">
+            <label htmlFor="select-variable" className="text-xs font-medium text-slate-300 flex items-center gap-1.5">
               <Layers className="h-3.5 w-3.5 text-cyan-400" />
               <span>Environmental Variable</span>
             </label>
             <select
+              id="select-variable"
+              aria-label="Environmental Variable"
               value={config.variableId}
               onChange={(e) =>
                 onChangeConfig({
@@ -81,11 +83,13 @@ export function InvestigationControls({
 
           {/* 2. Geographic Region Selector */}
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-slate-300 flex items-center gap-1.5">
+            <label htmlFor="select-region" className="text-xs font-medium text-slate-300 flex items-center gap-1.5">
               <MapPin className="h-3.5 w-3.5 text-cyan-400" />
               <span>Geographic Region</span>
             </label>
             <select
+              id="select-region"
+              aria-label="Geographic Region"
               value={config.regionId}
               onChange={(e) => onChangeConfig({ regionId: e.target.value })}
               className="h-9 w-full rounded-lg border border-slate-700 bg-slate-900/90 px-3 text-xs text-slate-100 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500 transition-colors cursor-pointer"
@@ -100,11 +104,13 @@ export function InvestigationControls({
 
           {/* 3. Start Date */}
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-slate-300 flex items-center gap-1.5">
+            <label htmlFor="input-start-date" className="text-xs font-medium text-slate-300 flex items-center gap-1.5">
               <Calendar className="h-3.5 w-3.5 text-cyan-400" />
               <span>Start Date</span>
             </label>
             <input
+              id="input-start-date"
+              aria-label="Start Date"
               type="date"
               value={config.startDate}
               min="2000-01-01"
@@ -116,11 +122,13 @@ export function InvestigationControls({
 
           {/* 4. End Date */}
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-slate-300 flex items-center gap-1.5">
+            <label htmlFor="input-end-date" className="text-xs font-medium text-slate-300 flex items-center gap-1.5">
               <Calendar className="h-3.5 w-3.5 text-cyan-400" />
               <span>End Date</span>
             </label>
             <input
+              id="input-end-date"
+              aria-label="End Date"
               type="date"
               value={config.endDate}
               min={config.startDate}
@@ -132,13 +140,14 @@ export function InvestigationControls({
 
           {/* 5. Temporal Resolution Toggle */}
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-slate-300 flex items-center gap-1.5">
+            <span className="text-xs font-medium text-slate-300 flex items-center gap-1.5">
               <Clock className="h-3.5 w-3.5 text-cyan-400" />
               <span>Temporal Resolution</span>
-            </label>
-            <div className="flex h-9 rounded-lg border border-slate-700 bg-slate-900 p-0.5">
+            </span>
+            <div className="flex h-9 rounded-lg border border-slate-700 bg-slate-900 p-0.5" role="group" aria-label="Temporal Resolution">
               <button
                 type="button"
+                aria-label="Daily resolution"
                 onClick={() => onChangeConfig({ resolution: "daily" })}
                 className={`flex-1 rounded-md text-xs font-medium transition-all ${
                   config.resolution === "daily"
@@ -150,6 +159,7 @@ export function InvestigationControls({
               </button>
               <button
                 type="button"
+                aria-label="Monthly resolution"
                 onClick={() => onChangeConfig({ resolution: "monthly" })}
                 className={`flex-1 rounded-md text-xs font-medium transition-all ${
                   config.resolution === "monthly"

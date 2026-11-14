@@ -12,6 +12,12 @@ export function MapViewController({ selectedRegion }: MapViewControllerProps) {
   const { map, isLoaded } = useMap();
 
   useEffect(() => {
+    if (map && typeof window !== "undefined") {
+      (window as any).__mapInstance = map;
+    }
+  }, [map]);
+
+  useEffect(() => {
     if (!map || !isLoaded) return;
 
     try {
