@@ -1,0 +1,13 @@
+{
+  "routes": [
+    { "path": "/", "title": "Earth System Trend Detective" },
+    { "path": "/dashboard", "title": "Dashboard" },
+    { "path": "/explorer", "title": "Data Explorer" },
+    { "path": "/analysis", "title": "Trend Analysis" },
+    { "path": "/map", "title": "Interactive Map" },
+    { "path": "/compare", "title": "Compare Regions" },
+    { "path": "/assistant", "title": "Earth AI Assistant" },
+    { "path": "/reports", "title": "Reports & Downloads" },
+    { "path": "/about", "title": "About Project" }
+  ]
+}

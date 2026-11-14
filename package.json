@@ -1,34 +1,27 @@
 {
-  "name": "terratrend",
-  "version": "0.1.0",
+  "name": "earth-system-trend-detective",
   "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "packageManager": "npm@10.8.2",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
+    "dev": "vite --host 0.0.0.0 --port 3000",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0 --port 3000"
   },
   "dependencies": {
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-    "lucide-react": "^1.73.0",
-    "maplibre-gl": "^6.18.0",
-    "next": "16.4.6",
-    "react": "19.3.0",
-    "react-dom": "19.3.0",
-    "recharts": "^3.10.1",
-    "tailwind-merge": "^3.7.0"
+    "@vitejs/plugin-react": "latest",
+    "axios": "latest",
+    "chart.js": "latest",
+    "framer-motion": "latest",
+    "leaflet": "latest",
+    "lucide-react": "latest",
+    "react": "latest",
+    "react-chartjs-2": "latest",
+    "react-dom": "latest",
+    "react-leaflet": "latest",
+    "react-router-dom": "latest",
+    "tailwindcss": "latest"
   },
-  "devDependencies": {
-    "@tailwindcss/turbopack": "4.3.3",
-    "@types/geojson": "^7946.0.16",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.4.6",
-    "puppeteer-core": "^25.17.0",
-    "tailwindcss": "4.3.3",
-    "typescript": "^5"
-  }
+  "devDependencies": {}
 }
