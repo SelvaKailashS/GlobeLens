@@ -1,0 +1,39 @@
+[project]
+name = "terratrend-backend"
+version = "0.1.0"
+description = "TerraTrend — NASA Earth Science Trend Analysis Backend"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "pydantic>=2.10.0",
+    "pydantic-settings>=2.6.0",
+    "numpy>=2.1.0",
+    "pandas>=2.2.0",
+    "scipy>=1.14.0",
+    "xarray>=2024.10.0",
+    "geopandas>=1.0.0",
+    "pymannkendall>=1.4.3",
+    "h5netcdf>=1.4.0",
+    "netCDF4>=1.7.0",
+    "aiofiles>=24.0.0",
+    "httpx>=0.28.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.24.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+pythonpath = ["..", "."]
+markers = [
+    "integration: Live NASA Earthdata network tests requiring internet access",
+]
+

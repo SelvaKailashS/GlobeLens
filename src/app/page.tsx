@@ -12,6 +12,10 @@ import { OverviewView } from "@/components/views/OverviewView";
 import { DataSourcesView } from "@/components/views/DataSourcesView";
 import { SavedInvestigationsView } from "@/components/views/SavedInvestigationsView";
 import { SettingsView } from "@/components/views/SettingsView";
+import { RegionalComparisonView } from "@/components/views/RegionalComparisonView";
+import { GuidedWorkflowModal } from "@/components/dashboard/GuidedWorkflowModal";
+import { ExportReportModal } from "@/components/dashboard/ExportReportModal";
+import { apiClient } from "@/services/apiClient";
 import {
   EnvironmentalVariableId,
   InvestigationConfig,
@@ -46,12 +50,27 @@ export default function TerraTrendDashboardPage() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [config, setConfig] = useState<InvestigationConfig>(INITIAL_CONFIG);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isWorkflowModalOpen, setIsWorkflowModalOpen] = useState(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [backendStatus, setBackendStatus] = useState<string>("connecting");
   const [isPending, startTransition] = useTransition();
 
   // Current investigation output result
   const [result, setResult] = useState<InvestigationResult>(() =>
     generateInvestigationData(INITIAL_CONFIG)
   );
+
+  // Check backend health on initial mount
+  React.useEffect(() => {
+    apiClient
+      .getHealth()
+      .then((h) => {
+        setBackendStatus(`online (${h.datasets_registered} datasets, ${h.regions_registered} regions)`);
+      })
+      .catch(() => {
+        setBackendStatus("offline (demo mode)");
+      });
+  }, []);
 
   // Handle configuration changes
   const handleConfigChange = (newValues: Partial<InvestigationConfig>) => {
@@ -62,14 +81,51 @@ export default function TerraTrendDashboardPage() {
     setResult(updatedResult);
   };
 
-  // Handle manual "Analyze Trends" trigger with simulated computation loader
-  const handleAnalyze = () => {
+  // Handle "Analyze Trends" trigger connecting to Python FastAPI backend
+  const handleAnalyze = async () => {
     setIsAnalyzing(true);
-    setTimeout(() => {
-      const freshResult = generateInvestigationData(config);
-      setResult(freshResult);
+    const baseResult = generateInvestigationData(config);
+
+    try {
+      // Map observations to backend API model
+      const points = baseResult.timeSeries.map((pt) => ({
+        timestamp: new Date(pt.timestamp).toISOString(),
+        latitude: baseResult.region.coordinates.lat,
+        longitude: baseResult.region.coordinates.lng,
+        value: pt.observed,
+        is_valid: true,
+      }));
+
+      // Call live Python backend
+      const analysis = await apiClient.runAnalysis({
+        points,
+        variable_id: config.variableId,
+        variable_name: baseResult.variable.name,
+        region_id: config.regionId,
+        region_name: baseResult.region.name,
+        original_units: baseResult.variable.unit,
+        alpha: 0.05,
+      });
+
+      // Update result with authoritative backend calculations
+      if (analysis.sens_slope && analysis.mann_kendall) {
+        baseResult.statistics.annualSlope = analysis.sens_slope.slope;
+        baseResult.statistics.ratePerDecade = `${analysis.sens_slope.rate_per_decade >= 0 ? "+" : ""}${analysis.sens_slope.rate_per_decade.toFixed(3)} ${baseResult.variable.unit}/decade`;
+        baseResult.statistics.senSlope = analysis.sens_slope.slope;
+        baseResult.statistics.pValue = analysis.mann_kendall.p_value;
+        baseResult.statistics.mannKendallZ = analysis.mann_kendall.z_score;
+        baseResult.statistics.mannKendallS = analysis.mann_kendall.s_statistic;
+        baseResult.statistics.isSignificant = analysis.is_statistically_significant;
+        baseResult.statistics.confidenceInterval = `95% CI: [${analysis.sens_slope.confidence_interval_95[0].toFixed(3)}, ${analysis.sens_slope.confidence_interval_95[1].toFixed(3)}]`;
+        baseResult.interpretation.scientificImplication = analysis.plain_language_interpretation;
+      }
+      setResult(baseResult);
+    } catch (err) {
+      console.warn("Backend analysis call failed; using local calibrated model:", err);
+      setResult(baseResult);
+    } finally {
       setIsAnalyzing(false);
-    }, 600);
+    }
   };
 
   // Reset to default
@@ -115,6 +171,8 @@ export default function TerraTrendDashboardPage() {
           onSelectRegion={handleSelectRegion}
           selectedVariableId={config.variableId}
           dateRange={{ start: config.startDate, end: config.endDate }}
+          onOpenGuidedWorkflow={() => setIsWorkflowModalOpen(true)}
+          onOpenExportReport={() => setIsExportModalOpen(true)}
         />
 
         {/* Scrollable Dashboard Viewport */}
@@ -236,6 +294,13 @@ export default function TerraTrendDashboardPage() {
             </div>
           )}
 
+          {/* TAB: Regional Comparison (Milestone 9) */}
+          {activeTab === "regional-comparison" && (
+            <div className="max-w-[1600px] mx-auto">
+              <RegionalComparisonView />
+            </div>
+          )}
+
           {/* TAB: Data Sources */}
           {activeTab === "data-sources" && (
             <div className="max-w-[1600px] mx-auto">
@@ -260,6 +325,25 @@ export default function TerraTrendDashboardPage() {
           )}
         </main>
       </div>
+
+      {/* 13-Step Guided Workflow Modal */}
+      <GuidedWorkflowModal
+        isOpen={isWorkflowModalOpen}
+        onClose={() => setIsWorkflowModalOpen(false)}
+        onApplyInvestigation={(cfg) => {
+          setConfig(cfg);
+          const r = generateInvestigationData(cfg);
+          setResult(r);
+          setActiveTab("explore-map");
+        }}
+      />
+
+      {/* Export Report / Research Dossier Modal */}
+      <ExportReportModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        result={result}
+      />
     </div>
   );
 }

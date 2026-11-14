@@ -330,6 +330,117 @@ export const GEOGRAPHIC_REGIONS: GeographicRegion[] = [
       ],
     },
   },
+  {
+    id: "coimbatore",
+    name: "Coimbatore & Western Ghats Foothills",
+    category: "Tropical",
+    location: "Tamil Nadu, India (Rain-shadow of Palakkad Gap)",
+    coordinates: { lat: 11.0168, lng: 76.9558 },
+    defaultZoom: 9.5,
+    areaKm2: 7469,
+    description: "Major industrial and agricultural hub in the rain shadow of the Palakkad Gap in the Western Ghats, experiencing urban heat island and monsoon variations.",
+    climateContext: "Semi-arid tropical wet and dry climate with moderated temperatures due to proximity to the Western Ghats.",
+    targetPhenomena: "Western Ghats orographic precipitation gradients, urban thermal signatures, and agricultural greenness.",
+    boundaryGeoJson: {
+      type: "FeatureCollection",
+      features: [
+        {
+          type: "Feature",
+          properties: {
+            id: "coimbatore",
+            name: "Coimbatore Region",
+            biome: "Tropical Dry Deciduous & Semi-Arid Agricultural Plains",
+          },
+          geometry: {
+            type: "Polygon",
+            coordinates: [
+              [
+                [76.75, 11.20],
+                [77.20, 11.20],
+                [77.20, 10.85],
+                [76.75, 10.85],
+                [76.75, 11.20],
+              ],
+            ],
+          },
+        },
+      ],
+    },
+  },
+  {
+    id: "chennai",
+    name: "Chennai Coastal Urban Metropolis",
+    category: "Tropical",
+    location: "Coromandel Coast, Tamil Nadu, India",
+    coordinates: { lat: 13.0827, lng: 80.2707 },
+    defaultZoom: 9.8,
+    areaKm2: 1189,
+    description: "Coastal metropolitan region on the Coromandel Coast of the Bay of Bengal, highly vulnerable to Northeast Monsoon cyclones, urban flooding, and sea surface temperature anomalies.",
+    climateContext: "Tropical wet and dry climate dominated by Northeast Monsoon (October-December) rainfall and intense coastal humidity.",
+    targetPhenomena: "Northeast monsoon precipitation extremes, urban heat island intensity, and coastal tropospheric nitrogen dioxide plumes.",
+    boundaryGeoJson: {
+      type: "FeatureCollection",
+      features: [
+        {
+          type: "Feature",
+          properties: {
+            id: "chennai",
+            name: "Chennai Metropolitan Region",
+            biome: "Coastal Plain & Urban Wetland Complex",
+          },
+          geometry: {
+            type: "Polygon",
+            coordinates: [
+              [
+                [79.95, 13.30],
+                [80.40, 13.30],
+                [80.40, 12.85],
+                [79.95, 12.85],
+                [79.95, 13.30],
+              ],
+            ],
+          },
+        },
+      ],
+    },
+  },
+  {
+    id: "madurai",
+    name: "Madurai Vaigai River Basin",
+    category: "Arid",
+    location: "Southern Tamil Nadu, India (Vaigai Basin)",
+    coordinates: { lat: 9.9252, lng: 78.1198 },
+    defaultZoom: 9.5,
+    areaKm2: 3741,
+    description: "Historical cultural and agricultural center in southern Tamil Nadu located in the Vaigai river basin, prone to heat stress and seasonal water scarcity.",
+    climateContext: "Hot semi-arid climate with high summer temperatures exceeding 40°C and erratic post-monsoon showers.",
+    targetPhenomena: "Surface temperature extremes, drought-induced vegetation browning, and soil moisture drawdown.",
+    boundaryGeoJson: {
+      type: "FeatureCollection",
+      features: [
+        {
+          type: "Feature",
+          properties: {
+            id: "madurai",
+            name: "Madurai Vaigai Region",
+            biome: "Southern Deccan Plateau Semi-Arid Scrub & River Basin",
+          },
+          geometry: {
+            type: "Polygon",
+            coordinates: [
+              [
+                [77.90, 10.15],
+                [78.35, 10.15],
+                [78.35, 9.75],
+                [77.90, 9.75],
+                [77.90, 10.15],
+              ],
+            ],
+          },
+        },
+      ],
+    },
+  },
 ];
 
 export const REGIONS_MAP: Record<string, GeographicRegion> = GEOGRAPHIC_REGIONS.reduce((acc, region) => {

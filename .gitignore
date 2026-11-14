@@ -1,7 +1,10 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# ==============================================================================
+# TerraTrend Project Root .gitignore
+# NASA Space Apps Challenge: Be an Earth Systems Trend Detective!
+# ==============================================================================
 
-# dependencies
-/node_modules
+# Node / Next.js Dependencies & Build Output
+node_modules/
 /.pnp
 .pnp.*
 .yarn/*
@@ -10,32 +13,81 @@
 !.yarn/releases
 !.yarn/versions
 
-# testing
-/coverage
+.next/
+out/
+dist/
+build/
+coverage/
+.vercel/
 
-# next.js
-/.next/
-/out/
+# TypeScript & Next build metadata
+*.tsbuildinfo
+next-env.d.ts
 
-# production
-/build
-
-# misc
-.DS_Store
-*.pem
-
-# debug
+# Logs
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# Environment Secrets & Credentials
+.env
+.env.*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+!.env.example
 
-# vercel
-.vercel
+# Python Bytecode, Virtual Environments & Caches
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+backend/.venv/
+.venv/
+venv/
+ENV/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+backend/*.egg-info/
+*.egg-info/
 
-# typescript
-*.tsbuildinfo
-next-env.d.ts
+# Earth Observation Data, Granules & Local Cache
+data/raw/*
+data/cache/*
+!data/raw/.gitkeep
+!data/cache/.gitkeep
+backend/data/raw/*
+backend/data/cache/*
+!backend/data/raw/.gitkeep
+!backend/data/cache/.gitkeep
+*.nc
+*.nc4
+*.hdf
+*.hdf5
+*.h5
+*.he5
+*.tif
+*.tiff
+*.grib
+*.grib2
+*.tmp_download
+
+# OS & IDE Temporary Files
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Automated browser verification test reports
+browser-test-results.json
+browser-verification-report.json

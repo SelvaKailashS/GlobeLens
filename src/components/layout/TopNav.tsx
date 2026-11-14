@@ -23,6 +23,8 @@ interface TopNavProps {
   selectedVariableId: EnvironmentalVariableId;
   dateRange: { start: string; end: string };
   onOpenQuickSearch?: () => void;
+  onOpenGuidedWorkflow?: () => void;
+  onOpenExportReport?: () => void;
 }
 
 export function TopNav({
@@ -30,6 +32,8 @@ export function TopNav({
   onSelectRegion,
   selectedVariableId,
   dateRange,
+  onOpenGuidedWorkflow,
+  onOpenExportReport,
 }: TopNavProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -132,6 +136,33 @@ export function TopNav({
               {selectedRegion.name}
             </span>
           </div>
+        </div>
+
+        {/* Guided Workflow & Export Action Buttons */}
+        <div className="flex items-center gap-1.5">
+          {onOpenGuidedWorkflow && (
+            <button
+              type="button"
+              onClick={onOpenGuidedWorkflow}
+              className="hidden lg:flex items-center gap-1.5 rounded-lg border border-cyan-800/80 bg-cyan-950/60 px-2.5 py-1 text-xs font-medium text-cyan-300 hover:bg-cyan-900/60 hover:text-cyan-200 transition-colors"
+              title="13-Step Guided Investigation"
+            >
+              <Compass className="h-3.5 w-3.5 text-cyan-400" />
+              <span>13-Step Guide</span>
+            </button>
+          )}
+
+          {onOpenExportReport && (
+            <button
+              type="button"
+              onClick={onOpenExportReport}
+              className="hidden md:flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-800/80 px-2.5 py-1 text-xs font-medium text-slate-300 hover:bg-slate-700 hover:text-white transition-colors"
+              title="Export Research Report (CSV/JSON/PDF)"
+            >
+              <Sparkles className="h-3.5 w-3.5 text-cyan-400" />
+              <span>Export Dossier</span>
+            </button>
+          )}
         </div>
 
         {/* User / Investigator Placeholder */}

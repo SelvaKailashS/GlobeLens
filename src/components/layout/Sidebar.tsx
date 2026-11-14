@@ -14,6 +14,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ShieldCheck,
+  GitCompare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +23,7 @@ export type ActiveTab =
   | "overview"
   | "explore-map"
   | "trend-analysis"
+  | "regional-comparison"
   | "data-sources"
   | "saved-investigations"
   | "settings";
@@ -57,6 +59,12 @@ export function Sidebar({
       label: "Trend Analysis",
       icon: TrendingUp,
       badge: "Stats",
+    },
+    {
+      id: "regional-comparison" as ActiveTab,
+      label: "Regional Comparison",
+      icon: GitCompare,
+      badge: "Multi-Region",
     },
     {
       id: "data-sources" as ActiveTab,
