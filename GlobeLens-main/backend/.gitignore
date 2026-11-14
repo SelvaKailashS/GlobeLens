@@ -1,0 +1,36 @@
+# Python Virtual Environment
+.venv/
+venv/
+ENV/
+env/
+
+# Python Bytecode and Cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Environment secrets and credentials
+.env
+.env.*
+!.env.example
+
+# Geospatial and Earth Science Cache / Raw Data
+data/raw/*
+data/cache/*
+!data/raw/.gitkeep
+!data/cache/.gitkeep
+*.nc
+*.nc4
+*.hdf
+*.h5
+*.he5
+*.tif
+*.tiff
+*.grib
+*.grib2
